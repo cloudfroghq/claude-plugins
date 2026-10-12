@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "knowledge": {
+      "type": "http",
+      "url": "${user_config.knowledge_url}",
+      "headers": { "Authorization": "Bearer ${user_config.knowledge_token}" }
+    }
+  }
+}
