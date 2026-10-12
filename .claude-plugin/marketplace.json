@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "cloudfroghq",
+  "description": "CloudFrog: memoria persistente para agentes y base de conocimiento por organización",
+  "owner": { "name": "CloudFrog", "email": "admin@cloudfrog.com.mx" },
+  "plugins": [
+    {
+      "name": "knowledge-remote",
+      "description": "Conocimiento de tu organización contra su servidor HTTP, con tu bearer personal",
+      "category": "productivity",
+      "source": "./plugins/knowledge-remote"
+    }
+  ]
+}

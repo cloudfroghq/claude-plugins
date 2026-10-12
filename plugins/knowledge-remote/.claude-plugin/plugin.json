@@ -1,0 +1,23 @@
+{
+  "name": "knowledge-remote",
+  "displayName": "Knowledge (remoto)",
+  "version": "0.1.0",
+  "description": "Herramientas de conocimiento contra el servidor HTTP de tu organización",
+  "author": { "name": "CloudFrog", "email": "admin@cloudfrog.com.mx" },
+  "homepage": "https://github.com/cloudfroghq/claude-plugins",
+  "userConfig": {
+    "knowledge_url": {
+      "type": "string",
+      "title": "URL del servidor",
+      "description": "https://<host-de-tu-organización>/mcp",
+      "required": true
+    },
+    "knowledge_token": {
+      "type": "string",
+      "title": "Bearer personal",
+      "description": "Token de alcance read que te entregó el administrador",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}
