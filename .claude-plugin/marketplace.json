@@ -5,6 +5,18 @@
   "owner": { "name": "CloudFrog", "email": "admin@cloudfrog.com.mx" },
   "plugins": [
     {
+      "name": "knowledge",
+      "description": "Conocimiento de tu organización por stdio: el servidor cloudfrog-knowledge corre en tu máquina con uvx sobre tu vault",
+      "category": "productivity",
+      "source": {
+        "source": "git-subdir",
+        "url": "git@github.com:horacioespinosa/knowledge.git",
+        "path": "plugin/claude-code",
+        "ref": "v0.2.0",
+        "sha": "82351073d737b1af1e808cad50a0641c35bba596"
+      }
+    },
+    {
       "name": "knowledge-remote",
       "description": "Conocimiento de tu organización contra su servidor HTTP, con tu bearer personal",
       "category": "productivity",

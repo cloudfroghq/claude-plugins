@@ -6,13 +6,52 @@ Marketplace `cloudfroghq` de plugins de Claude Code. Solo contiene manifiestos: 
 
 | Plugin | Id | Qué hace | Estado |
 |---|---|---|---|
+| `knowledge` | `knowledge@cloudfroghq` | Corre el servidor de conocimiento en tu máquina por stdio, con `uvx`, sobre tus vaults locales | Disponible (exige acceso SSH de lectura a `horacioespinosa/knowledge`, repositorio privado) |
 | `knowledge-remote` | `knowledge-remote@cloudfroghq` | Conecta Claude Code a un servidor de conocimiento por HTTP con tu bearer personal | Disponible |
 
-El catálogo crece por PR. Cada plugin se identifica como `<plugin>@cloudfroghq`.
+El catálogo crece por PR. Cada plugin se identifica como `<plugin>@cloudfroghq`. Elige uno de los dos de conocimiento: `knowledge` si tienes acceso al código y tus vaults en disco, `knowledge-remote` si no.
 
 ## Instalación
 
 Requiere Claude Code 2.1.275 o posterior.
+
+### Instalar `knowledge` (stdio)
+
+```bash
+ssh -T git@github.com   # debe saludarte por tu usuario de GitHub
+claude plugin marketplace add cloudfroghq/claude-plugins
+claude plugin install knowledge@cloudfroghq --scope user
+```
+
+Dentro de una sesión: `/plugin install knowledge --marketplace cloudfroghq/claude-plugins`.
+
+Requisitos:
+
+- Una llave SSH con acceso de lectura a `horacioespinosa/knowledge`, cargada en `ssh-agent` y sin passphrase interactiva. La entrada del marketplace usa una URL SSH explícita: Claude Code clona el plugin por SSH al instalar, y `uvx` clona el tag del servidor por SSH en cada arranque. Sin acceso, la instalación falla con `Failed to clone repository for git-subdir source` y no cae a HTTPS; `CLAUDE_CODE_PLUGIN_PREFER_HTTPS` no cambia este comportamiento.
+- `uv`, con `uvx` resoluble desde el entorno con el que arranca Claude Code. Si no hereda tu `PATH` (por ejemplo, al abrirlo desde el Dock), define `UVX_BIN` con la ruta absoluta.
+- Un registro de vaults en `~/.config/knowledge/vaults.yaml`, o el archivo que indiques en la opción `vaults_config`.
+- `OPENAI_API_KEY` en el entorno de la sesión si algún vault usa el proveedor `openai`. La clave no es una opción del plugin: se hereda del entorno.
+
+El primer arranque descarga unos 850 MB con `uv` y puede superar los 30 s que Claude Code espera a un servidor MCP. Precalienta la caché ejecutando el `doctor` del mismo paquete, con el tag que indica el campo `ref` de la entrada `knowledge` en `.claude-plugin/marketplace.json`:
+
+```bash
+uvx --python 3.12 --from 'git+ssh://git@github.com/horacioespinosa/knowledge.git@<ref>' cloudfrog-knowledge doctor
+```
+
+Si aun así el servidor aparece como `failed` en `/mcp`, sube `MCP_TIMEOUT` (por ejemplo `60000`) en el bloque `env` de `~/.claude/settings.json`.
+
+#### Opciones de `knowledge`
+
+Las dos son opcionales; sin valor, el plugin usa los valores por omisión del servidor.
+
+| Opción | Qué poner |
+|---|---|
+| `vaults_config` | Ruta a un `vaults.yaml` con los vaults a servir. Vacío: `~/.config/knowledge/vaults.yaml` |
+| `embeddings_provider` | `openai`, `none` o `bag-of-words`. Vacío: el que declare `vaults.yaml` (por omisión `openai`) |
+
+Para cambiarlas, abre `/plugin`, entra en Installed, elige `knowledge` y usa Configure, o ejecuta `claude plugin configure knowledge@cloudfroghq --values-stdin < valores.json`. Sin argumentos, `claude plugin configure knowledge@cloudfroghq` solo lista las opciones. Después reinicia Claude Code.
+
+### Instalar `knowledge-remote` (HTTP)
 
 ```bash
 # Sin llave SSH de GitHub: obligatorio para instalar desde /plugin y para actualizar
@@ -28,7 +67,7 @@ Dentro de una sesión, la forma equivalente en un solo paso es:
 /plugin install knowledge-remote --marketplace cloudfroghq/claude-plugins
 ```
 
-### Configurar `knowledge-remote`
+#### Opciones de `knowledge-remote`
 
 El plugin pide dos valores y no trae ninguno por omisión:
 
@@ -43,26 +82,35 @@ Sin argumentos, `claude plugin configure` solo lista las opciones; no las guarda
 
 ### Herramientas que expone
 
-El servidor se llama `knowledge`, así que las tools llegan con el prefijo `mcp__plugin_knowledge-remote_knowledge__` (por ejemplo `mcp__plugin_knowledge-remote_knowledge__search`).
+El servidor se llama `knowledge` en los dos plugins y el prefijo de las tools lo da el plugin:
+
+| Plugin | Prefijo | Ejemplo |
+|---|---|---|
+| `knowledge` | `mcp__plugin_knowledge_knowledge__` | `mcp__plugin_knowledge_knowledge__search` |
+| `knowledge-remote` | `mcp__plugin_knowledge-remote_knowledge__` | `mcp__plugin_knowledge-remote_knowledge__search` |
 
 ### Un solo plugin de conocimiento
 
-No instales `knowledge-remote` junto con otro plugin que sirva el mismo catálogo de tools: el agente vería el catálogo duplicado. Elige uno.
+No instales `knowledge` junto con `knowledge-remote` ni con otro plugin que sirva el mismo catálogo de tools: el agente vería el catálogo duplicado. Elige uno.
 
 ## Seguridad
 
-- El bearer es personal y solo lo guarda tu configuración local de Claude Code. Nunca va en este repositorio.
-- El plugin envía el bearer en cada petición: usa solo URLs `https://`. Un servidor por `http://` expone el token en la red.
-- Si el administrador de tu organización aún no te entregó una URL con TLS y un bearer personal, no hay nada que configurar todavía.
+- `knowledge-remote`: el bearer es personal y solo lo guarda tu configuración local de Claude Code. Nunca va en este repositorio.
+- `knowledge-remote` envía el bearer en cada petición: usa solo URLs `https://`. Un servidor por `http://` expone el token en la red.
+- Si el administrador de tu organización aún no te entregó una URL con TLS y un bearer personal, no hay nada que configurar en `knowledge-remote` todavía.
+- `knowledge` no maneja bearers ni claves en sus opciones: `OPENAI_API_KEY` se hereda del entorno de la sesión y el plugin no la guarda.
+- La entrada de `knowledge` fija el plugin a un tag (`ref`) y al commit exacto de ese tag (`sha`): Claude Code hace checkout del commit, así que mover o borrar el tag no cambia lo que se instala.
 
 ## Actualizar
 
 ```bash
 claude plugin marketplace update cloudfroghq
-claude plugin update knowledge-remote@cloudfroghq
+claude plugin update knowledge@cloudfroghq          # o knowledge-remote@cloudfroghq
 ```
 
 Luego ejecuta `/reload-plugins`. La actualización automática del marketplace viene apagada; se recomienda dejarla así. Para congelar el catálogo en un estado exacto, agrega el marketplace con una referencia: `claude plugin marketplace add cloudfroghq/claude-plugins#<sha>`.
+
+Una versión nueva de `knowledge` llega al catálogo cuando un PR cambia `ref` y `sha` de su entrada; mientras ese PR no se mergee, `claude plugin update` no la ve.
 
 ## Contribuir
 
@@ -81,3 +129,5 @@ bash scripts/check-entries.sh
 ```
 
 El `version` de un plugin lo fija su `plugin.json`; las entradas del marketplace no llevan `version`.
+
+Al subir la versión de una entrada `git-subdir`, `sha` es el commit al que apunta el tag, no el objeto del tag: con un tag anotado, `git rev-parse <tag>` devuelve el id del objeto del tag. Obtén el commit con `git rev-parse '<tag>^{commit}'` (o `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`).
