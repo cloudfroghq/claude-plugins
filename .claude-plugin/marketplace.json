@@ -21,6 +21,16 @@
       "description": "Conocimiento de tu organización contra su servidor HTTP, con tu bearer personal",
       "category": "productivity",
       "source": "./plugins/knowledge-remote"
+    },
+    {
+      "name": "memory",
+      "description": "Memoria persistente para agentes de código: sobrevive entre sesiones y compactaciones. Requiere el binario memory (brew install cloudfroghq/tap/memory)",
+      "category": "productivity",
+      "source": {
+        "source": "archive",
+        "url": "https://github.com/cloudfroghq/memory-releases/releases/download/v1.5.0/memory-plugin-claude-code_1.5.0.zip",
+        "sha256": "8a688c80b8d16278672e86a5037d68670eadd1f5f67133b5e65026763d6aeb78"
+      }
     }
   ]
 }
