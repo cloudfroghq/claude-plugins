@@ -12,8 +12,8 @@
         "source": "git-subdir",
         "url": "git@github.com:horacioespinosa/knowledge.git",
         "path": "plugin/claude-code",
-        "ref": "v0.4.0",
-        "sha": "74e8f405bdbaaf0a1b7cf390974588b5baef1103"
+        "ref": "v0.5.0",
+        "sha": "d6209b5261cbfd73ae355396dce4af90ee46be12"
       }
     },
     {
