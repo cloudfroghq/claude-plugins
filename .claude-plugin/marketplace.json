@@ -28,8 +28,8 @@
       "category": "productivity",
       "source": {
         "source": "archive",
-        "url": "https://github.com/cloudfroghq/memory-releases/releases/download/v1.7.0/memory-plugin-claude-code_1.7.0.zip",
-        "sha256": "c298782058ad791fca9ace209f6cd259475d34ed0ab3a7b8a551fd8d6fec9071"
+        "url": "https://github.com/cloudfroghq/memory-releases/releases/download/v1.7.1/memory-plugin-claude-code_1.7.1.zip",
+        "sha256": "acadfe0201fa143618511537bdb132eaf250c34ff78e39dca5bd35a7e1007c25"
       }
     }
   ]
