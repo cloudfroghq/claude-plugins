@@ -6,10 +6,10 @@ Marketplace `cloudfroghq` de plugins de Claude Code. Solo contiene manifiestos: 
 
 | Plugin | Id | Qué hace | Estado |
 |---|---|---|---|
-| `knowledge` | `knowledge@cloudfroghq` | Corre el servidor de conocimiento en tu máquina por stdio, con `uvx`, sobre tus vaults locales | Disponible (exige acceso SSH de lectura a `horacioespinosa/knowledge`, repositorio privado) |
+| `knowledge` | `knowledge@cloudfroghq` | Corre el servidor de conocimiento en tu máquina por stdio, con `uvx`, sobre tus vaults locales | Disponible (código en el repositorio público `cloudfroghq/knowledge`) |
 | `knowledge-remote` | `knowledge-remote@cloudfroghq` | Conecta Claude Code a un servidor de conocimiento por HTTP con tu bearer personal | Disponible |
 
-El catálogo crece por PR. Cada plugin se identifica como `<plugin>@cloudfroghq`. Elige uno de los dos de conocimiento: `knowledge` si tienes acceso al código y tus vaults en disco, `knowledge-remote` si no.
+El catálogo crece por PR. Cada plugin se identifica como `<plugin>@cloudfroghq`. Elige uno de los dos de conocimiento: `knowledge` si tienes tus vaults en disco, `knowledge-remote` si usas el servidor HTTP de tu organización.
 
 ## Instalación
 
@@ -18,7 +18,6 @@ Requiere Claude Code 2.1.275 o posterior.
 ### Instalar `knowledge` (stdio)
 
 ```bash
-ssh -T git@github.com   # debe saludarte por tu usuario de GitHub
 claude plugin marketplace add cloudfroghq/claude-plugins
 claude plugin install knowledge@cloudfroghq --scope user
 ```
@@ -27,15 +26,15 @@ Dentro de una sesión: `/plugin install knowledge --marketplace cloudfroghq/clau
 
 Requisitos:
 
-- Una llave SSH con acceso de lectura a `horacioespinosa/knowledge`, cargada en `ssh-agent` y sin passphrase interactiva. La entrada del marketplace usa una URL SSH explícita: Claude Code clona el plugin por SSH al instalar, y `uvx` clona el tag del servidor por SSH en cada arranque. Sin acceso, la instalación falla con `Failed to clone repository for git-subdir source` y no cae a HTTPS; `CLAUDE_CODE_PLUGIN_PREFER_HTTPS` no cambia este comportamiento.
-- `uv`, con `uvx` resoluble desde el entorno con el que arranca Claude Code. Si no hereda tu `PATH` (por ejemplo, al abrirlo desde el Dock), define `UVX_BIN` con la ruta absoluta.
+- Acceso a `github.com` por HTTPS. La entrada del marketplace usa la URL HTTPS del repositorio público `cloudfroghq/knowledge`: Claude Code clona el plugin sin llave SSH ni credenciales, y `uvx` trae el tag del servidor por `git+https` en cada arranque.
+- `uv`, con `uvx` resoluble desde el entorno con el que arranca Claude Code. El plugin corre `uvx --managed-python --python 3.12`, que descarga un Python 3.12 gestionado por `uv` la primera vez. Si no hereda tu `PATH` (por ejemplo, al abrirlo desde el Dock), define `UVX_BIN` con la ruta absoluta.
 - Un registro de vaults en `~/.config/knowledge/vaults.yaml`, o el archivo que indiques en la opción `vaults_config`.
 - `OPENAI_API_KEY` en el entorno de la sesión si algún vault usa el proveedor `openai`. La clave no es una opción del plugin: se hereda del entorno.
 
-El primer arranque descarga unos 850 MB con `uv` y puede superar los 30 s que Claude Code espera a un servidor MCP. Precalienta la caché ejecutando el `doctor` del mismo paquete, con el tag que indica el campo `ref` de la entrada `knowledge` en `.claude-plugin/marketplace.json`:
+El primer arranque clona el tag, descarga unas dependencias con `uv` (y, si hace falta, el Python gestionado) y puede superar los 30 s que Claude Code espera a un servidor MCP. Precalienta la caché ejecutando el `doctor` del mismo paquete, con el tag que indica el campo `ref` de la entrada `knowledge` en `.claude-plugin/marketplace.json`:
 
 ```bash
-uvx --python 3.12 --from 'git+ssh://git@github.com/horacioespinosa/knowledge.git@<ref>' cloudfrog-knowledge doctor
+uvx --managed-python --python 3.12 --from 'git+https://github.com/cloudfroghq/knowledge.git@<ref>' cloudfrog-knowledge doctor
 ```
 
 Si aun así el servidor aparece como `failed` en `/mcp`, sube `MCP_TIMEOUT` (por ejemplo `60000`) en el bloque `env` de `~/.claude/settings.json`.

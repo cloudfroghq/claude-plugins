@@ -10,10 +10,10 @@
       "category": "productivity",
       "source": {
         "source": "git-subdir",
-        "url": "git@github.com:horacioespinosa/knowledge.git",
+        "url": "https://github.com/cloudfroghq/knowledge.git",
         "path": "plugin/claude-code",
-        "ref": "v0.8.0",
-        "sha": "309fbbee7d0ad7479cebdaad6c4c56b0e8ecce52"
+        "ref": "v0.9.0",
+        "sha": "50e9913f3a6a54709bacd22fa64c454b738419ba"
       }
     },
     {
